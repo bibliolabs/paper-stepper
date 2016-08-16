@@ -1,8 +1,4 @@
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
-<link rel="import" href="../neon-advanced-animations/roll-up-animation.html">
-<link rel="import" href="../neon-advanced-animations/unroll-animation.html">
-<link rel="import" href="../neon-animation/neon-animation-runner-behavior.html">
-<link rel="import" href="../paper-badge/paper-badge.html">
 <link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-ripple/paper-ripple.html">
 <link rel="import" href="../paper-styles/color.html">
@@ -10,8 +6,9 @@
 <link rel="import" href="../paper-styles/typography.html">
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../iron-icons/editor-icons.html">
-<link rel="import" href="../iron-label/iron-label.html">
+<link rel="import" href="../iron-collapse/iron-collapse.html">
 <link rel="import" href="paper-step-behavior.html">
 <link rel="import" href="paper-step-shared-styles.html">
 
@@ -24,126 +21,125 @@
   <template>
     <style include="paper-step-shared-styles">
       :host {
-        /* for .backdrop to overflow */
-        overflow: visible;
         @apply(--layout-vertical);
       }
-      #connectorLine {
-        width: 1px;
-        background: var(--divider-color, --paper-grey-300);
-        margin-left: 35px;
-        margin-right: 20px;
+      #connectedBadge, #textWrapper {
+        /* to be above paper-ripple*/
+        z-index: 1;
       }
-      #stepWrapper {
-        padding: 16px 0;
-      }
-      .flex-content-childs ::content > * {
-        @apply(--layout-flex);
+      #collapse {
+        --iron-collapse-transition-duration: var(--paper-vertical-step-transition-duration, 500ms);
+        @apply(--layout-horizontal);
       }
       /**
-       * Animations
+       * Content
        */
-      #animationWrapper {
+      #connectedStep {
         @apply(--layout-horizontal);
-        height: 16px;
-        overflow: hidden;
       }
-      :host[opened] #animationWrapper,
-      :host.neon-animating #animationWrapper {
-        height: auto;
+      #contentConnectorLine {
+        width: 1px;
+        background: var(--divider-color, --paper-grey-300);
+        margin-left: 36px;
+        margin-right: 24px;
       }
+      #stepWrapper {
+        @apply(--layout-flex);
+        /*should be 48px on large screen?*/
+        padding-right: 24px;
+      }
+      #paperStepWrapper {
+        max-height: calc(var(--paper-vertical-step-max-height, 400px) - 92px);
+        @apply(--layout-scroll);
+      }
+
       /**
        * Buttons
        */
       #buttonsWrapper {
         height: 48px;
-        padding-bottom: 40px;
+        padding-top: 16px;
+        padding-bottom: 28px;
+        @apply(--layout-horizontal);
+        @apply(--layout-center);
+        @apply(--layout-flex-none);
       }
-      #stepButtonsWrapper {
-        padding-right: 48px;
-        @apply(--layout-flex);
+      #buttonsWrapper > paper-button {
+        margin-right: 8px;
+        margin-left: 0;
       }
       #continueButton {
         --paper-button: {
           background: var(--default-primary-color, paper-blue-500);
           color: white;
-          margin-left: 0;
         };
       }
       /**
-       * Step label
+       * Label
        */
-      iron-label {
-        cursor: default;
-        position: relative;
-        padding: 8px 16px;
-      }
-
       #textWrapper {
         @apply(--layout-vertical);
-        padding-right: 8px;
+        padding: 20px 0 20px 12px;
       }
-      :host.iron-selected paper-badge,
-      :host[completed] paper-badge {
-        --paper-badge-background: var(--default-primary-color);
+      #label {
+        @apply(--layout-horizontal);
       }
-      #backdrop {
-        position: absolute;
-        left: 0;
-        right: 0;
-        top: -8px;
-        bottom: -8px;
+      #connectedBadge {
+        @apply(--layout-vertical);
+        @apply(--layout-center);
+        margin-left: 24px;
       }
-      :host[selectable] #backdrop:hover {
-        /* using alpha chanel for .connectorLine to grow dark */
-        background: rgba(0,0,0,0.04);
+      #beforeConnectorLine, #afterConnectorLine {
+        width: 1px;
+        background: var(--divider-color, --paper-grey-300);
       }
-      :host[selectable]:not([opened]):not([completed]) #backdrop:hover + paper-badge {
-        --paper-badge-background: var(--paper-grey-500);
+      #beforeConnectorLine {
+        height: 10px;
       }
-      :host[selectable] #backdrop {
-        cursor: pointer;
+      #afterConnectorLine {
+        @apply(--layout-flex);
       }
-      #textWrapper {
-        /* for .textWrapper to position above .backdrop*/
-        position: relative;
-        /* in order to convey events to .backdrop*/
-        pointer-events: none;
+      #badge {
+        margin: 8px 0;
+      }
+      :host(.firstStep) #beforeConnectorLine, :host(.lastStep) #contentConnectorLine{
+        visibility: hidden;
+      }
+      :host(.lastStep) #afterConnectorLine {
+        display: none;
       }
     </style>
-    <iron-label>
-      <div id="backdrop" on-tap="_stepLabelTapped"
-        on-mouseenter="_updateBadgeBackground" on-mouseleave="_updateBadgeBackground">
-        <paper-ripple noink="[[!selectable]]"></paper-ripple>
+    <div id="label" on-tap="_stepLabelTapped">
+      <paper-ripple></paper-ripple>
+      <div id="connectedBadge">
+        <div id="beforeConnectorLine"></div>
+        <div id="badge">
+          <iron-icon hidden$="{{!_computeIsIconBadge(icon)}}" icon="{{icon}}"></iron-icon>
+          <span hidden$="{{_computeIsIconBadge(icon)}}">{{index}}</span>
+        </div>
+        <div id="afterConnectorLine" class="connectorLine"></div>
       </div>
-      <!-- hack: set "for" attribute to an undefined id for the badge 
-      not to position at the top right corner -->
-      <paper-badge for="noFor" icon="[[_computeIcon(completed, editable)]]"
-        label="[[index]]">
-      </paper-badge>
       <div id="textWrapper">
-        <span>[[label]]</span>
+        <span id="textLabel">[[label]]</span>
         <template is="dom-if" if="[[optional]]">
           <span id="optional">Optional</span>
         </template>
       </div>
-    </iron-label>
-    <div id="animationWrapper">
-      <div id="connectorLine"></div>
-      <div id="stepButtonsWrapper">
-        <div id="stepWrapper" class="layout horizontal flex flex-content-childs">
+    </div>
+    <iron-collapse id="collapse" opened="[[opened]]">
+      <div id="contentConnectorLine"></div>
+      <div id="stepWrapper">
+        <div id="paperStepWrapper">
           <content></content>
         </div>
         <div id="buttonsWrapper">
-          <paper-button id="continueButton" on-tap="continue">
-            [[continueText]]
-          </paper-button>
-          <paper-button id="skipButton" on-tap="skip">
+          <paper-button id="continueButton" on-tap="continue">[[continueText]]</paper-button>
+          <!-- <paper-button id="skipButton" on-tap="skip">
             [[skipText]]
-          </paper-button>
+          </paper-button> -->
         </div>
       </div>
-    </div>
+    </iron-collapse>
   </template>
   <script>
 
@@ -151,65 +147,15 @@
       is: 'paper-vertical-step',
 
       behaviors: [
-        Polymer.NeonAnimationRunnerBehavior,
         Zecat.PaperStepBehavior
       ],
 
-      properties: {
-        animationConfig: {
-          value: function() {
-            return {
-              'entry': {
-                name: 'unroll-animation',
-                node: this.$.animationWrapper,
-                from: 16
-              },
-              'exit': {
-                name: 'roll-up-animation',
-                node: this.$.animationWrapper,
-                to: 16
-              }
-            }
-          }
-        },
-
-        opened: {
-          observer: '_openedChange'
-        },
-      },
-
-      listeners: {
-        'neon-animation-finish': '_removeAnimatingClass'
-      },
-
-      _closeAnimation: function() {
-        this.toggleClass('neon-animating', true);
-        this.playAnimation('exit');
-      },
-
-      _openAnimation: function() {
-        this.toggleClass('neon-animating', true);
-        this.playAnimation('entry');
-      },
-
-      _computeIcon: function(completed, editable) {
-        return completed ? ( editable ? 'editor:mode-edit' : 'done' ) : '';
-      },
-
-      _openedChange: function(opened, old) {
-        if (old != undefined) { 
-          opened ? this._openAnimation() : this._closeAnimation();
-        }
-      },
-      _removeAnimatingClass: function() {
-        this.toggleClass('neon-animating', false);
-      },
       skip: function() {
         this.fire('skip-step');
       },
       continue: function() {
         this.fire('continue-step');
-      },
+      }
     });
   </script>
 </dom-module>

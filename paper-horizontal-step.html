@@ -1,8 +1,6 @@
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-icons/editor-icons.html">
-<link rel="import" href="../iron-label/iron-label.html">
-<link rel="import" href="../paper-badge/paper-badge.html">
 <link rel="import" href="../paper-styles/color.html">
 <link rel="import" href="../paper-styles/typography.html">
 <link rel="import" href="../paper-ripple/paper-ripple.html">
@@ -19,61 +17,93 @@
   <template>
     <style include="paper-step-shared-styles">
       :host {
-        @apply(--paper-step-header);
-        cursor: default;
-        position: relative;
-        padding: 24px 0;
-        @apply(--layout-horizontal);
-        @apply(--layout-center);
-        -moz-user-select: none;
-        -ms-user-select: none;
-        -webkit-user-select: none;
-        user-select: none;
+        @apply(--layout-flex);
+        overflow: hidden;
       }
-      :host[selectable]:hover paper-badge{
-        --paper-badge-background: var(--paper-grey-600);
-      }
-      iron-label {
-        height: 33px;
+      :host(:hover) {
+        overflow: visible;
       }
       #textWrapper {
         @apply(--layout-vertical);
         padding-right: 8px;
+        overflow: hidden;
       }
-      #label {
+      #textLabel, #optional {
         white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
       }
-      :host[opened] paper-badge, :host[completed] paper-badge {
-        --paper-badge-background: var(--default-primary-color, --google-blue-500);
+      #badge {
+        margin: 0 8px;
       }
-      :host[selectable]:hover {
-        /* using alpha chanel for .connectorLine to grow dark*/
-        background: rgba(0,0,0,0.04);
+      #badgeWrapper, #textWrapper {
+        /* to be above paper-ripple*/
+        z-index: 1;
       }
-      :host[selectable] {
-        cursor: pointer;
+      :host(:not([alternative-label])) #label {
+        @apply(--layout-horizontal);
+        @apply(--layout-center);
+        height: 72px;
       }
-      #leftConnectorLine, #rightConnectorLine {
+      :host(.firstStep:not([alternative-label])) #badge {
+        margin-left: 24px;
+      }
+      :host(.lastStep:not([alternative-label])) #textWrapper {
+        padding-right: 24px;
+      }
+      :host(:not([alternative-label]):not(.firstStep)) #label::before, 
+      :host(:not([alternative-label]):not(.lastStep)) #label::after,
+      :host([alternative-label]) #badgeWrapper::before,
+      :host([alternative-label]) #badgeWrapper::after  {
         height: 1px;
-        min-width: 24px;
+        min-width: 16px;
         background: var(--divider-color, --paper-grey-300);
         @apply(--layout-flex);
+        content: '';
+      }
+      :host([alternative-label].firstStep) #badgeWrapper::before,
+      :host([alternative-label].lastStep) #badgeWrapper::after {
+        visibility: hidden;
+      }
+      :host([alternative-label]) {
+        @apply(--layout);
+      }
+      :host([alternative-label]) #textWrapper{
+        padding: 0 16px;
+        @apply(--layout-vertical);
+        @apply(--layout-center);
+      }
+      :host([alternative-label]) #textLabel, :host([alternative-label]) #optional{
+        text-align: center;
+        @apply(--layout-self-stretch);
+      }
+      :host([alternative-label]) #label{
+        @apply(--layout-vertical);
+        @apply(--layout-self-stretch);
+        padding: 24px 0;
+        width: 100%;
+      }
+      :host([alternative-label]) #badgeWrapper {
+        @apply(--layout-horizontal);
+        @apply(--layout-center);
+        padding-bottom: 16px;
       }
     </style>
-    <div id="leftConnectorLine"></div>
-    <paper-ripple noink="[[!selectable]]"></paper-ripple>
-    <iron-label>
-      <paper-badge for="noFor" icon="[[_computeIcon(completed, editable)]]"
-        label="[[index]]">
-      </paper-badge>
+    <div id="label" on-tap="_stepLabelTapped">
+      <paper-ripple></paper-ripple>
+      <div id="badgeWrapper">
+        <div id="badge">
+          <iron-icon hidden$="{{!_computeIsIconBadge(icon)}}" icon="{{icon}}"></iron-icon>
+          <span hidden$="{{_computeIsIconBadge(icon)}}">{{index}}</span>
+        </div>
+      </div>
       <div id="textWrapper">
-        <span id="label">[[label]]</span>
+        <span id="textLabel">[[label]]</span>
         <template is="dom-if" if="[[optional]]">
           <span id="optional">Optional</span>
         </template>
       </div>
-    </iron-label>
-    <div id="rightConnectorLine"></div>
+    </div>
   </template>
   <script>
     Polymer({
@@ -87,16 +117,12 @@
         'tap': '_stepLabelTapped'
       },
 
-      properties : {
+      properties: {
         alternativeLabel: {
           type: Boolean,
           value: false,
           reflectToAttribute: true
         }
-      },
-
-      _computeIcon: function(completed, editable) {
-        return completed ? ( editable ? 'editor:mode-edit' : 'done' ) : '';
       }
     });
   </script>

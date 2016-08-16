@@ -26,43 +26,25 @@
       :host {
         display: block;
         box-sizing: border-box;
-        @apply(--paper-font-common-base);
         @apply(--layout-vertical);
       }
       #stepSelector {
         @apply(--shadow-elevation-2dp);
         @apply(--layout-horizontal);
         @apply(--layout-justified);
-        @apply(--layout-center);
         background: var(--primary-background-color);
         @apply(--paper-horizontal-stepper-selector);
       }
-      paper-horizontal-step {
-        @apply(--layout-flex);
-      }
-      neon-animated-pages {
+      #slideshow {
         @apply(--layout-vertical);
-        min-height: 200px;
+        @apply(--layout-flex);
       }
       #buttonsWrapper {
         @apply(--layout-horizontal);
         padding: 0 24px 24px 24px;
       }
-      #stepSelector > paper-horizontal-step:first-of-type ::content #leftConnectorLine,
-      #stepSelector > paper-horizontal-step:last-of-type ::content #rightConnectorLine {
-        display: none;
-      }
-      #stepSelector > paper-horizontal-step:first-of-type {
-        padding-left: 24px;
-      }
-      #stepSelector > paper-horizontal-step:last-of-type {
-        padding-right: 24px;
-      }
-      neon-animated-pages, neon-animated-pages ::content > * {
+      #slideshow ,  #slideshow  ::content > * {
         padding: var(--paper-horizontal-stepper-content-padding, 24px);
-      }
-      neon-animated-pages {
-        overflow: hidden;
       }
       .layout-flex {
         @apply(--layout-flex);
@@ -72,6 +54,12 @@
       }
       paper-button[disabled] {
         background-color: transparent;
+      }
+      [hidden] {
+        display: none;
+      }
+      iron-selector:not(:hover) paper-horizontal-step.iron-selected {
+        overflow: visible;
       }
     </style>
     <iron-selector id="stepSelector"
@@ -87,7 +75,7 @@
     <div id="buttonsWrapper">
       <paper-button disabled=[[!_hasBackStep]] on-tap="back">[[backText]]</paper-button>
       <span class="layout-flex"></span>
-      <paper-button disabled="[[completed]]" on-tap="progress">[[skipText]]</paper-button>
+      <paper-button hidden$="[[!hasSkipButton]]" disabled="[[!_canSkip]]" on-tap="progress">[[skipText]]</paper-button>
       <paper-button disabled="[[completed]]" id="continueButton" on-tap="continue">[[continueText]]</paper-button>
     </div>
   </template>
@@ -102,11 +90,14 @@
       properties: {
         alternativeLabel: {
           type: Boolean,
-          value: false,
-          reflectToAttribute: true
+          value: false
         },
         selected: {
           observer: '_chooseAnimationDirection'
+        },
+        hasSkipButton: {
+          type: Boolean,
+          value: false
         }
       },
 
