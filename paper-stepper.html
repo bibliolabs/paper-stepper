@@ -55,7 +55,8 @@
       },
       selected: {
         type: Number,
-        value: 0
+        value: 0,
+        observer: '_selectedObserver'
       },
       optionalText: {
         type: String,
@@ -76,6 +77,14 @@
       hasSkipButton: {
         type: Boolean,
         value: false
+      }
+    },
+
+    _selectedObserver: function(newValue) {
+      var orientedStepper = this.$$('paper-horizontal-stepper');
+
+      if (orientedStepper) {
+        this.$$('paper-horizontal-stepper').set('selected', newValue);
       }
     },
 

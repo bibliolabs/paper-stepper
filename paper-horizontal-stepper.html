@@ -129,6 +129,8 @@
         }
         // use on-iron-activate when https://github.com/PolymerElements/neon-animation/issues/130 is fixed
         this.selectedCopy = newValue;
+
+        this.fire('on-selected-changed', newValue, oldValue);
       }
     });
   </script>
