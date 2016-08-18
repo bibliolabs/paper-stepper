@@ -94,7 +94,15 @@
           value: false
         },
         selected: {
+          type: Number,
+          value: 0,
+          notify: true,
           observer: '_chooseAnimationDirection'
+        },
+        completedSteps: {
+          type: Object,
+          value: 0,
+          observer: '_completedStepsObserver'
         },
         hasSkipButton: {
           type: Boolean,
@@ -112,11 +120,25 @@
             optional: step.optional,
             label: step.label,
             // set previousComplete true for the first step
-            previousCompleted: !index
+//            previousCompleted: !index,
+            previousCompleted: ((index === 0) || ((index - 1) < this.completedSteps)),
+            completed: (index < this.completedSteps)
           });
           Polymer.dom(horizontalStep).appendChild(step.cloneNode(true));
           Polymer.dom(this.$.stepSelector).appendChild(horizontalStep);
         }.bind(this));
+      },
+
+      _completedStepsObserver: function(completedSteps) {
+        var horizontalSteps = Polymer.dom(this.root).querySelectorAll('paper-horizontal-step');
+
+        if (horizontalSteps) {
+          horizontalSteps.forEach(function(step) {
+            var index = (step.index - 1);
+            step.previousCompleted = ((index === 0) || ((index - 1) < completedSteps));
+            step.completed = (index < completedSteps);
+          }.bind(this));
+        }
       },
 
       _chooseAnimationDirection: function(newValue, oldValue) {
@@ -129,8 +151,6 @@
         }
         // use on-iron-activate when https://github.com/PolymerElements/neon-animation/issues/130 is fixed
         this.selectedCopy = newValue;
-
-        this.fire('on-selected-changed', newValue, oldValue);
       }
     });
   </script>

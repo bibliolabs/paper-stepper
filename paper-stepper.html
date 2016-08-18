@@ -23,6 +23,18 @@
         max-height: var(--paper-vertical-stepper-max-height);
       }
     </style>
+    <paper-horizontal-stepper
+      back-text="[[backText]]"
+      skip-text="[[skipText]]"
+      continue-text="[[continueText]]"
+      optional-text="[[optionalText]]"
+      linear="[[linear]]"
+      selected="{{selected}}"
+      completed-steps="{{completedSteps}}"
+      hasSkipButton="[[backText]]"
+      alternativeLabel="[[backText]]">
+      <content></content>
+    </paper-horizontal-stepper>
   </template>
 </dom-module>
 
@@ -55,8 +67,8 @@
       },
       selected: {
         type: Number,
-        value: 0,
-        observer: '_selectedObserver'
+        notify: true,
+        value: 0
       },
       optionalText: {
         type: String,
@@ -77,35 +89,40 @@
       hasSkipButton: {
         type: Boolean,
         value: false
+      },
+      completedSteps: {
+        type: Number,
+        notify: true,
+        value: 0
       }
     },
 
-    _selectedObserver: function(newValue) {
-      var orientedStepper = this.$$('paper-horizontal-stepper');
-
-      if (orientedStepper) {
-        this.$$('paper-horizontal-stepper').set('selected', newValue);
-      }
+    listeners: {
+      'progress': '_progressFired'
     },
 
-    ready: function() {
-      var orientedStepper = this.create(
-        this.vertical ? 'paper-vertical-stepper' : 'paper-horizontal-stepper', {
-          backText: this.backText,
-          skipText: this.skipText,
-          continueText: this.continueText,
-          optionalText: this.optionalText,
-          linear: this.linear,
-          selected: this.selected,
-          hasSkipButton: this.hasSkipButton,
-          alternativeLabel: this.alternativeLabel
-      });
-      var steps = this.getEffectiveChildren();
-      steps.forEach(function(step) {
-        Polymer.dom(orientedStepper).appendChild(step);
-      }.bind(this));
-      Polymer.dom(this.root).appendChild(orientedStepper);
+    _progressFired: function(event, index) {
+      this.completedSteps = index;
     }
+
+//    ready: function() {
+//      var orientedStepper = this.create(
+//        this.vertical ? 'paper-vertical-stepper' : 'paper-horizontal-stepper', {
+//          backText: this.backText,
+//          skipText: this.skipText,
+//          continueText: this.continueText,
+//          optionalText: this.optionalText,
+//          linear: this.linear,
+//          selected: this.selected,
+//          hasSkipButton: this.hasSkipButton,
+//          alternativeLabel: this.alternativeLabel
+//      });
+//      var steps = this.getEffectiveChildren();
+//      steps.forEach(function(step) {
+//        Polymer.dom(orientedStepper).appendChild(step);
+//      }.bind(this));
+//      Polymer.dom(this.root).appendChild(orientedStepper);
+//    }
   });
 
 </script>
