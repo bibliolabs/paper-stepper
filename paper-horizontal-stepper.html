@@ -71,8 +71,13 @@
       .cancel-button {
         color: var(--paper-pink-600);
       }
-      .next-button {
+      .next-button,
+      .review-button {
         background-color: #127DA9;
+        color: white;
+      }
+      .submit-button {
+        background-color: var(--paper-green-600);
         color: white;
       }
     </style>
@@ -88,7 +93,9 @@
     </neon-animated-pages>
     <div id="buttonsWrapper">
       <paper-button class="cancel-button" on-tap="cancel">CANCEL</paper-button>
-      <paper-button class="next-button" disabled="[[completed]]" on-tap="continue">[[continueText]] <iron-icon icon="icons:arrow-forward"></iron-icon></paper-button>
+      <paper-button class="next-button" hidden$="[[!showNextButton]]" on-tap="continue">NEXT <iron-icon icon="icons:arrow-forward"></iron-icon></paper-button>
+      <paper-button class="submit-button" hidden$="[[!showSubmitButton]]" on-tap="submit">SUBMIT</paper-button>
+      <paper-button class="review-button" hidden$="[[!showReviewButton]]" on-tap="continue">REVIEW <iron-icon icon="icons:arrow-forward"></iron-icon></paper-button>
       <!--<paper-button disabled=[[!_hasBackStep]] on-tap="back">[[backText]]</paper-button>-->
       <!--<span class="layout-flex"></span>-->
       <!--<paper-button hidden$="[[!hasSkipButton]]" disabled="[[!_canSkip]]" on-tap="progress">[[skipText]]</paper-button>-->
@@ -127,11 +134,43 @@
           type: Boolean,
           value: false,
           readOnly: true
+        },
+        showNextButton: {
+          type: Boolean,
+          computed: '_computeShowNextButton(selected, completedSteps, numSteps)'
+        },
+        showSubmitButton: {
+          type: Boolean,
+          computed: '_computeShowSubmitButton(selected, completedSteps, numSteps)'
+        },
+        showReviewButton: {
+          type: Boolean,
+          computed: '_computeShowReviewButton(selected, completedSteps, numSteps)'
+        },
+        numSteps: {
+          type: Number,
+          readOnly: true
         }
+      },
+
+      submit: function () {
+        this.fire('submit');
       },
 
       cancel: function () {
         this.fire('cancel-all');
+      },
+
+      _computeShowNextButton: function(selected, completedSteps, numSteps) {
+        return completedSteps < (numSteps - 1);
+      },
+
+      _computeShowSubmitButton: function(selected, completedSteps, numSteps) {
+        return (selected + 1) === numSteps;
+      },
+
+      _computeShowReviewButton: function(selected, completedSteps, numSteps) {
+        return (completedSteps === (numSteps - 1)) && ((selected + 1) !== numSteps);
       },
 
       attached: function() {
@@ -164,6 +203,8 @@
           // This dirty hack shouldn't be needed
           this._setCompleted(true);
         }
+
+        this._setNumSteps(children.length);
       },
 
       _completedStepsObserver: function(completedSteps) {
