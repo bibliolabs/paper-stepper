@@ -59,7 +59,8 @@
       },
 
       observers: [
-        '_notifyProgress(completed, previousCompleted)'
+        '_notifyProgress(completed, previousCompleted)',
+        '_notifyCompletedChanged(completed)'
       ],
 
       _computeSelectable: function(linearStepper, completed, editable, previousCompleted) {
@@ -69,6 +70,9 @@
         if (completed && previousCompleted) {
           this.fire('progress', this.index);
         }
+      },
+      _notifyCompletedChanged: function(completed) {
+        this.fire('on-completed-changed', completed);
       },
       _stepLabelTapped: function() {
         if (this.selectable) {

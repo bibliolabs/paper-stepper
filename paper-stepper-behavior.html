@@ -12,7 +12,8 @@
       'continue-step': '_continueStep',
       'skip-step': 'progress',
       'back-step': 'back',
-      'progress': '_updatePreviousCompleted'
+//      'progress': '_updatePreviousCompleted',
+      'on-completed-changed': '_stepCompletedChange'
     },
 
     properties: {
@@ -36,6 +37,7 @@
       selected: {
         type: Number,
         value: 0,
+        notify: true,
         observer: '_selectedChange'
       },
       linear: {
@@ -50,7 +52,8 @@
         type: Boolean,
         value: false,
         readOnly: true,
-        observer: '_completedChange'
+        notify: true
+//        observer: '_completedChange'
       },
       _firstStep: {
         type: Object,
@@ -115,11 +118,31 @@
       }
     },
 
-    _updatePreviousCompleted: function(e) {
-      var progressIdx = e.detail;
-      progressIdx == this.$.stepSelector.items.length ?
-        this._setCompleted(true) :
-        this.$.stepSelector.items[e.detail].previousCompleted = true;
+//    _updatePreviousCompleted: function(e) {
+//      console.log('paper-stepper-behavior: _updatePreviousCompleted');
+//
+//      var progressIdx = e.detail;
+//      progressIdx == this.$.stepSelector.items.length ?
+//        this._setCompleted(true) :
+//        this.$.stepSelector.items[e.detail].previousCompleted = true;
+//    },
+    _stepCompletedChange: function(e) {
+      var step = e.target;
+
+      if (step.index) {
+        if (step.completed) {
+          var selectorItems = this.$.stepSelector.items;
+
+          if (step.index === selectorItems.length) {
+            this._setCompleted(true);
+          } else {
+            //why is this needed?
+            selectorItems[step.index].previousCompleted = true;
+          }
+        } else {
+          this._setCompleted(false);
+        }
+      }
     },
     /**
      * Loops around the steps from the current (if no step opened, from the first one)
@@ -162,12 +185,12 @@
         return false;
       }
     },
-    _completedChange: function(completed) {
-      if (completed) {
-        this.$.stepSelector.selected = null;
-        this.fire('completed');
-      }
-    },
+//    _completedChange: function(completed) {
+//      if (completed) {
+//        this.$.stepSelector.selected = null;
+//        this.fire('completed');
+//      }
+//    },
     _update_backStepIndex: function(selected) {
       var items = this.$.stepSelector.items;
       if (selected != null && items.length) {
@@ -205,9 +228,6 @@
       }
       this._update_skipStepIndex(newValue);
       this._update_backStepIndex(newValue);
-    },
-
+    }
   };
-
-
 </script>

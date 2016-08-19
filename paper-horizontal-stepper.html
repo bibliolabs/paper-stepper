@@ -1,3 +1,4 @@
+<link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../iron-selector/iron-selector.html">
 <link rel="import" href="../neon-animation/neon-animated-pages.html">
@@ -42,7 +43,12 @@
       }
       #buttonsWrapper {
         @apply(--layout-horizontal);
-        padding: 0 24px 24px 24px;
+        @apply(--layout-justified);
+        @apply(--layout-center);
+        /*padding: 0 24px 24px 24px;*/
+        padding: 12px;
+        background-color: var(--paper-grey-200);
+        border-radius: 3px;
       }
       #slideshow ,  #slideshow  ::content > * {
         padding: var(--paper-horizontal-stepper-content-padding, 24px);
@@ -62,6 +68,13 @@
       iron-selector:not(:hover) paper-horizontal-step.iron-selected {
         overflow: visible;
       }
+      .cancel-button {
+        color: var(--paper-pink-600);
+      }
+      .next-button {
+        background-color: #127DA9;
+        color: white;
+      }
     </style>
     <iron-selector id="stepSelector"
       selected="{{selected}}"
@@ -74,10 +87,12 @@
       <content></content>
     </neon-animated-pages>
     <div id="buttonsWrapper">
-      <paper-button disabled=[[!_hasBackStep]] on-tap="back">[[backText]]</paper-button>
-      <span class="layout-flex"></span>
-      <paper-button hidden$="[[!hasSkipButton]]" disabled="[[!_canSkip]]" on-tap="progress">[[skipText]]</paper-button>
-      <paper-button disabled="[[completed]]" id="continueButton" on-tap="continue">[[continueText]]</paper-button>
+      <paper-button class="cancel-button" on-tap="cancel">CANCEL</paper-button>
+      <paper-button class="next-button" disabled="[[completed]]" on-tap="continue">[[continueText]] <iron-icon icon="icons:arrow-forward"></iron-icon></paper-button>
+      <!--<paper-button disabled=[[!_hasBackStep]] on-tap="back">[[backText]]</paper-button>-->
+      <!--<span class="layout-flex"></span>-->
+      <!--<paper-button hidden$="[[!hasSkipButton]]" disabled="[[!_canSkip]]" on-tap="progress">[[skipText]]</paper-button>-->
+      <!--<paper-button disabled="[[completed]]" id="continueButton" on-tap="continue">[[continueText]]</paper-button>-->
     </div>
   </template>
   <script>
@@ -107,11 +122,24 @@
         hasSkipButton: {
           type: Boolean,
           value: false
+        },
+        completed: {
+          type: Boolean,
+          value: false,
+          readOnly: true
         }
       },
 
+      cancel: function () {
+        this.fire('cancel-all');
+      },
+
       attached: function() {
-        this.getEffectiveChildren().forEach(function(step, index) {
+        var completed = false;
+
+        var children = this.getEffectiveChildren();
+
+        children.forEach(function(step, index) {
           var horizontalStep = this.create('paper-horizontal-step', {
             index: index + 1,
             linearStepper: this.linear,
@@ -126,7 +154,16 @@
           });
           Polymer.dom(horizontalStep).appendChild(step.cloneNode(true));
           Polymer.dom(this.$.stepSelector).appendChild(horizontalStep);
+
+          if (((index + 1) === children.length) && (horizontalStep.completed)) {
+            completed = true;
+          }
         }.bind(this));
+
+        if (completed) {
+          // This dirty hack shouldn't be needed
+          this._setCompleted(true);
+        }
       },
 
       _completedStepsObserver: function(completedSteps) {

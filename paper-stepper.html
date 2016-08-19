@@ -32,7 +32,8 @@
       selected="{{selected}}"
       completed-steps="{{completedSteps}}"
       hasSkipButton="[[backText]]"
-      alternativeLabel="[[backText]]">
+      alternativeLabel="[[backText]]",
+      completed="{{completed}}">
       <content></content>
     </paper-horizontal-stepper>
   </template>
@@ -80,7 +81,7 @@
       },
       completed: {
         type: Boolean,
-        value: false
+        notify: true
       },
       responsiveWidth: {
         type: Number,
