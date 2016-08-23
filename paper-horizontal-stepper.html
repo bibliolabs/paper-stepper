@@ -43,8 +43,8 @@
       }
       #buttonsWrapper {
         @apply(--layout-horizontal);
-        @apply(--layout-justified);
         @apply(--layout-center);
+        @apply(--layout-justified);
         /*padding: 0 24px 24px 24px;*/
         padding: 12px;
         background-color: var(--paper-grey-200);
@@ -69,14 +69,22 @@
         overflow: visible;
       }
       .cancel-button {
+        @apply(--layout-self-start);
         color: var(--paper-pink-600);
       }
       .next-button,
       .review-button {
+        @apply(--layout-self-end);
         background-color: #127DA9;
         color: white;
       }
+      .submit-another-button {
+        @apply(--layout-self-end);
+        margin-left: auto;
+        color: #127DA9;
+      }
       .submit-button {
+        @apply(--layout-self-end);
         background-color: var(--paper-green-600);
         color: white;
       }
@@ -94,6 +102,7 @@
     <div id="buttonsWrapper">
       <paper-button class="cancel-button" on-tap="cancel">CANCEL</paper-button>
       <paper-button class="next-button" hidden$="[[!showNextButton]]" on-tap="continue">NEXT <iron-icon icon="icons:arrow-forward"></iron-icon></paper-button>
+      <paper-button class="submit-another-button" hidden$="[[!showSubmitButton]]" on-tap="submitAddAnother">SUBMIT & ADD ANOTHER WORK</paper-button>
       <paper-button class="submit-button" hidden$="[[!showSubmitButton]]" on-tap="submit">SUBMIT</paper-button>
       <paper-button class="review-button" hidden$="[[!showReviewButton]]" on-tap="continue">REVIEW <iron-icon icon="icons:arrow-forward"></iron-icon></paper-button>
       <!--<paper-button disabled=[[!_hasBackStep]] on-tap="back">[[backText]]</paper-button>-->
@@ -154,7 +163,11 @@
       },
 
       submit: function () {
-        this.fire('submit');
+        this.fire('submit', false);
+      },
+
+      submitAddAnother: function () {
+        this.fire('submit', true);
       },
 
       cancel: function () {
