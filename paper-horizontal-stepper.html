@@ -88,6 +88,9 @@
         background-color: var(--paper-green-600);
         color: white;
       }
+      neon-animated-pages {
+        overflow: hidden;
+      }
     </style>
     <iron-selector id="stepSelector"
       selected="{{selected}}"
@@ -171,7 +174,7 @@
       },
 
       cancel: function () {
-        this.fire('cancel-all');
+        this.fire('cancel');
       },
 
       _computeShowNextButton: function(selected, completedSteps, numSteps) {

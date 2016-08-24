@@ -113,6 +113,8 @@
       if ( (this.$.stepSelector.selectedItem || this.progress())
         && ( step = this.$.stepSelector.selectedItem.getEffectiveChildren()[0] )
         && step.validate() ) {
+
+        window.scrollTo(0, 0);
         this.$.stepSelector.selectedItem.completed = true;
         this.progress();
       }
